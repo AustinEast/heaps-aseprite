@@ -3,13 +3,17 @@ package;
 import aseprite.AseAnim;
 import h2d.Bitmap;
 import h2d.Flow;
+import h2d.Text;
 import hxd.App;
 import hxd.Key;
 import hxd.Res;
+import hxd.res.DefaultFont;
 
 class Main extends App {
   var flow:Flow;
   var scrollSpeed = 250;
+  var drawcalls:Text;
+  var fps:Text;
 
   override function init() {
     #if hl
@@ -25,6 +29,13 @@ class Main extends App {
     flow = new Flow(s2d);
     flow.multiline = true;
     flow.maxWidth = engine.width;
+
+    drawcalls = new Text(DefaultFont.get(), s2d);
+    drawcalls.text = 'drawcalls: ${engine.drawCalls}';
+
+    fps = new Text(DefaultFont.get(), s2d);
+    fps.text = 'fps: ${engine.fps}';
+    fps.y += drawcalls.textHeight;
 
     // RBG Color Mode
     new Bitmap(Res._128x128_rgba.toTile(), flow);
@@ -54,6 +65,14 @@ class Main extends App {
     new AseAnim(Res.slices2.getSlices('Slice 2'), flow).loop = true;
     new AseAnim(Res.slices2.getSlices('Slice 3'), flow).loop = true;
     new AseAnim(Res.slices2.getSlices('Slice 4'), flow).loop = true;
+
+    // Live Resource Updatng
+    var animation = new AseAnim(Res.test.getTag('Idle'), flow);
+    animation.loop = true;
+    Res.test.watch(() -> {
+      Res.test.watchCallback();
+      animation.play(Res.test.getTag('Idle'));
+    });
   }
 
   override function update(dt:Float) {
@@ -68,6 +87,12 @@ class Main extends App {
     flow.scaleX = Math.max(1, flow.scaleX);
     flow.scaleY = Math.max(1, flow.scaleY);
     flow.reflow();
+
+    drawcalls.text = 'drawcalls: ${engine.drawCalls}';
+    fps.text = 'fps: ${engine.fps}';
+
+    drawcalls.setPosition(s2d.camera.x, s2d.camera.y);
+    fps.setPosition(drawcalls.x, drawcalls.y + drawcalls.textHeight);
   }
 
   static function main() {

@@ -10,6 +10,7 @@
 
 # flags
 -debug
+-D windowTitle=heaps-aseprite
 -D windowSize=600x600
 
 # flags 

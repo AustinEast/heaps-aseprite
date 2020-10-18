@@ -90,7 +90,7 @@ class Aseprite extends Resource {
     if (tag.chunk.fromFrame == tag.chunk.toFrame) animation.push({index: 0, tile: tiles[0], duration: frames[0].duration});
     else switch (tag.chunk.animDirection) {
       case AnimationDirection.FORWARD:
-        for (i in tag.chunk.fromFrame...tag.chunk.toFrame) animation.push({index: i, tile: tiles[i], duration: frames[i].duration});
+        for (i in tag.chunk.fromFrame...tag.chunk.toFrame + 1) animation.push({index: i, tile: tiles[i], duration: frames[i].duration});
       case AnimationDirection.REVERSE:
         var i = tag.chunk.toFrame;
         while (i > tag.chunk.fromFrame) {
@@ -225,7 +225,10 @@ class Aseprite extends Resource {
       pixels.blit(ase.header.width * x, ase.header.height * y, frames[i].pixels, 0, 0, frames[i].pixels.width, frames[i].pixels.height);
     }
 
-    if (texture == null) texture = Texture.fromPixels(pixels);
+    if (texture == null) {
+      texture = Texture.fromPixels(pixels);
+      watch(watchCallback);
+    }
     else {
       var t = Texture.fromPixels(pixels);
       texture.swapTexture(t);
@@ -234,8 +237,6 @@ class Aseprite extends Resource {
     }
 
     pixels.dispose();
-
-    watch(watchCallback);
   }
 
   public function watchCallback() {
@@ -244,9 +245,9 @@ class Aseprite extends Resource {
     layers.resize(0);
     tags.clear();
     slices.clear();
+    tiles = null;
     loadData();
     loadTexture();
-    tiles = null;
   }
 
   private inline function next_power_of_2(v:Int) {
