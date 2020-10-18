@@ -141,7 +141,6 @@ class Aseprite extends Resource {
     var slice = slices.get(name);
     if (slice == null || !slice.data.has9Slices) return null;
 
-    var texture = toTexture();
     var sliceKey = slice.data.sliceKeys[frame];
 
     return new ScaleGrid(toTile().sub(sliceKey.xOrigin, sliceKey.yOrigin, sliceKey.width, sliceKey.height, -sliceKey.xPivot, -sliceKey.yPivot),

@@ -10,9 +10,9 @@
   "contributors": [
     "austineast"
   ],
-  "url": "https://austineast.dev/",
-  "releasenote": "initial release",
-  "version": "0.0.1",
+  "url": "https://github.com/AustinEast/heaps-aseprite",
+  "releasenote": "remove unused 9-slice values",
+  "version": "0.0.3",
   "dependencies": {
     "ase": ""
   }
