@@ -87,7 +87,8 @@ class Aseprite extends Resource {
 
     var tiles = toTiles();
     var animation = [];
-    switch (tag.chunk.animDirection) {
+    if (tag.chunk.fromFrame == tag.chunk.toFrame) animation.push({index: 0, tile: tiles[0], duration: frames[0].duration});
+    else switch (tag.chunk.animDirection) {
       case AnimationDirection.FORWARD:
         for (i in tag.chunk.fromFrame...tag.chunk.toFrame) animation.push({index: i, tile: tiles[i], duration: frames[i].duration});
       case AnimationDirection.REVERSE:
@@ -237,7 +238,7 @@ class Aseprite extends Resource {
     watch(watchCallback);
   }
 
-  private function watchCallback() {
+  public function watchCallback() {
     for (frame in frames) frame.dispose();
     frames.resize(0);
     layers.resize(0);
@@ -245,6 +246,7 @@ class Aseprite extends Resource {
     slices.clear();
     loadData();
     loadTexture();
+    tiles = null;
   }
 
   private inline function next_power_of_2(v:Int) {
