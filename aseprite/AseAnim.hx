@@ -79,7 +79,7 @@ class AseAnim extends Drawable {
   function set_currentFrame(frame:Float) {
     curFrame = frames.length == 0 ? 0 : Math.floor(frame % frames.length);
     if (curFrame < 0) curFrame += frames.length;
-    remainingDuration = frames[curFrame].duration / 1000;
+    remainingDuration = frames.length == 0 ? 0 : frames[curFrame].duration / 1000;
     return curFrame;
   }
 }
