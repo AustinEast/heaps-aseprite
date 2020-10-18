@@ -14,4 +14,4 @@
 
 # flags 
 # -dce full
-# -debug
+-debug

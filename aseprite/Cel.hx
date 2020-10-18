@@ -34,6 +34,10 @@ class Cel {
     }
   }
 
+  public function dispose() {
+    if (pixels != null) pixels.dispose();
+  }
+
   private function grayscaleToRgba(bytes:Bytes) {
     var rgba = Bytes.alloc(4);
     var c = bytes.get(0);

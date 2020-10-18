@@ -70,6 +70,11 @@ class Frame {
     }
   }
 
+  public function dispose() {
+    pixels.dispose();
+    for (layer in layers) if (layer.cel != null) layer.cel.dispose();
+  }
+
   inline function get_duration():Int return data.header.duration;
 }
 

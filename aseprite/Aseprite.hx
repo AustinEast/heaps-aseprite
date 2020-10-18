@@ -32,88 +32,12 @@ class Aseprite extends Resource {
 
   public function new(entry:FileEntry) {
     super(entry);
-
-    ase = Ase.fromBytes(entry.getBytes());
-
-    for (chunk in ase.frames[0].chunks) {
-      switch (chunk.header.type) {
-        case ChunkType.LAYER:
-          layers.push(cast chunk);
-        case ChunkType.PALETTE:
-          palette = new Palette(cast chunk);
-        case ChunkType.TAGS:
-          frameTags = cast chunk;
-
-          for (frame_tag_data in frameTags.tags) {
-            var animation_tag:Tag = new Tag(frame_tag_data);
-
-            if (tags.exists(frame_tag_data.tagName)) {
-              var num:Int = 1;
-              var new_name:String = '${frame_tag_data.tagName}_$num';
-              while (tags.exists(new_name)) {
-                num++;
-                new_name = '${frame_tag_data.tagName}_$num';
-              }
-              trace('WARNING: This file already contains tag named "${frame_tag_data.tagName}". It will be automatically reanamed to "$new_name"');
-              tags[new_name] = animation_tag;
-            }
-            else {
-              tags[frame_tag_data.tagName] = animation_tag;
-            }
-          }
-        case ChunkType.SLICE:
-          var new_slice = new Slice(cast chunk);
-          slices[new_slice.name] = new_slice;
-      }
-    }
-
-    for (i in 0...ase.frames.length) {
-      var data = ase.frames[i];
-      var frame:Frame = new Frame({
-        index: i,
-        sprite: this,
-        frame: data
-      });
-      duration += frame.duration;
-      frames.push(frame);
-    }
-
-    for (tag in tags) {
-      for (j in tag.chunk.fromFrame...tag.chunk.toFrame + 1) {
-        frames[j].tags.push(tag.name);
-      }
-    }
+    loadData();
   }
 
   public function toTexture():Texture {
     if (texture != null) return texture;
-
-    widthInTiles = 1;
-    heightInTiles = 1;
-
-    for (i in 0...frames.length) {
-      var y = Math.floor(i / widthInTiles);
-      if (y >= heightInTiles) {
-        heightInTiles++;
-        widthInTiles++;
-      }
-    }
-
-    var textureWidth = next_power_of_2(ase.header.width * widthInTiles);
-    var textureHeight = next_power_of_2(ase.header.height * heightInTiles);
-
-    var pixels = Pixels.alloc(textureWidth, textureHeight, RGBA);
-
-    for (i in 0...frames.length) {
-      var x = i % widthInTiles;
-      var y = Math.floor(i / widthInTiles);
-      pixels.blit(ase.header.width * x, ase.header.height * y, frames[i].pixels, 0, 0, frames[i].pixels.width, frames[i].pixels.height);
-    }
-
-    texture = Texture.fromPixels(pixels);
-
-    pixels.dispose();
-
+    loadTexture();
     return texture;
   }
 
@@ -125,7 +49,6 @@ class Aseprite extends Resource {
     if (tiles != null) return tiles;
 
     var tile = toTile();
-
     tiles = [
       for (i in 0...frames.length) {
         var x = i % widthInTiles;
@@ -223,6 +146,105 @@ class Aseprite extends Resource {
         }
       }
     ];
+  }
+
+  private function loadData() {
+    ase = Ase.fromBytes(entry.getBytes());
+
+    for (chunk in ase.frames[0].chunks) {
+      switch (chunk.header.type) {
+        case ChunkType.LAYER:
+          layers.push(cast chunk);
+        case ChunkType.PALETTE:
+          palette = new Palette(cast chunk);
+        case ChunkType.TAGS:
+          frameTags = cast chunk;
+
+          for (frame_tag_data in frameTags.tags) {
+            var animation_tag:Tag = new Tag(frame_tag_data);
+
+            if (tags.exists(frame_tag_data.tagName)) {
+              var num:Int = 1;
+              var new_name:String = '${frame_tag_data.tagName}_$num';
+              while (tags.exists(new_name)) {
+                num++;
+                new_name = '${frame_tag_data.tagName}_$num';
+              }
+              trace('WARNING: This file already contains tag named "${frame_tag_data.tagName}". It will be automatically reanamed to "$new_name"');
+              tags[new_name] = animation_tag;
+            }
+            else {
+              tags[frame_tag_data.tagName] = animation_tag;
+            }
+          }
+        case ChunkType.SLICE:
+          var new_slice = new Slice(cast chunk);
+          slices[new_slice.name] = new_slice;
+      }
+    }
+
+    for (i in 0...ase.frames.length) {
+      var data = ase.frames[i];
+      var frame:Frame = new Frame({
+        index: i,
+        sprite: this,
+        frame: data
+      });
+      duration += frame.duration;
+      frames.push(frame);
+    }
+
+    for (tag in tags) {
+      for (j in tag.chunk.fromFrame...tag.chunk.toFrame + 1) {
+        frames[j].tags.push(tag.name);
+      }
+    }
+  }
+
+  private function loadTexture() {
+    widthInTiles = 1;
+    heightInTiles = 1;
+
+    for (i in 0...frames.length) {
+      var y = Math.floor(i / widthInTiles);
+      if (y >= heightInTiles) {
+        heightInTiles++;
+        widthInTiles++;
+      }
+    }
+
+    var textureWidth = next_power_of_2(ase.header.width * widthInTiles);
+    var textureHeight = next_power_of_2(ase.header.height * heightInTiles);
+
+    var pixels = Pixels.alloc(textureWidth, textureHeight, RGBA);
+
+    for (i in 0...frames.length) {
+      var x = i % widthInTiles;
+      var y = Math.floor(i / widthInTiles);
+      pixels.blit(ase.header.width * x, ase.header.height * y, frames[i].pixels, 0, 0, frames[i].pixels.width, frames[i].pixels.height);
+    }
+
+    if (texture == null) texture = Texture.fromPixels(pixels);
+    else {
+      var t = Texture.fromPixels(pixels);
+      texture.swapTexture(t);
+      texture.alloc();
+      t.dispose();
+    }
+
+    pixels.dispose();
+
+    watch(watchCallback);
+  }
+
+  private function watchCallback() {
+    for (frame in frames) frame.dispose();
+    frames.resize(0);
+    layers.resize(0);
+    tags.clear();
+    slices.clear();
+    loadData();
+    loadTexture();
   }
 
   private inline function next_power_of_2(v:Int) {
