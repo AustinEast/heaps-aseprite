@@ -5,6 +5,7 @@ Load and render sprites and animations in Aseprite format. Based on the [ase](ht
 * Hooks into the Heaps Engine's resource management to automatically handle any `.aseprite` or `.ase` file
 * Supports all Color Modes, Animation Tags, Layers, and Slices (including 9-Slices!)
 * Includes the `AseAnim` Class to easily render Animations (based on the Heaps Engine's `Anim` Class)
+* Supports Live Resource Updating
 
 ## Getting Started
 
