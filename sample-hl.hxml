@@ -1,0 +1,13 @@
+# import base.xml
+sample.hxml
+
+# libraries
+-lib hlsdl
+# -lib hldx
+# -lib hlopenal
+
+# output
+-hl bin/sample.hl
+
+# uncomment next line to open the output on build
+-cmd hl bin/sample.hl

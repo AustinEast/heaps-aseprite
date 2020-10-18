@@ -1,0 +1,17 @@
+# class paths
+-cp sample
+
+# entry point
+-main Main
+
+# libraries
+-lib heaps
+-lib heaps-aseprite
+
+# flags
+-debug
+-D windowSize=600x600
+
+# flags 
+# -dce full
+# -debug

@@ -1,0 +1,19 @@
+{
+  "name": "heaps-aseprite",
+  "license": "MIT",
+  "tags": [
+    "heaps",
+    "animation",
+    "aseprite"
+  ],
+  "description": "Aseprite file parsing for Heaps",
+  "contributors": [
+    "austineast"
+  ],
+  "url": "https://austineast.dev/",
+  "releasenote": "initial release",
+  "version": "0.0.1",
+  "dependencies": {
+    "ase": ""
+  }
+}

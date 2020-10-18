@@ -1,0 +1,8 @@
+# import base.xml
+sample.hxml
+
+# output
+-js bin/sample.js
+
+# uncomment next line to open the output on build
+# -cmd open ./index.html

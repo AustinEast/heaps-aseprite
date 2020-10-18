@@ -1,0 +1,2 @@
+# Adds .aseprite file handling to hxd.res.Config
+--macro aseprite.Macros.init()
