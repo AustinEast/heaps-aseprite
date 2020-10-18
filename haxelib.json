@@ -11,8 +11,8 @@
     "austineast"
   ],
   "url": "https://github.com/AustinEast/heaps-aseprite",
-  "releasenote": "remove unused 9-slice values",
-  "version": "0.0.3",
+  "releasenote": "live reloading support",
+  "version": "0.0.4",
   "dependencies": {
     "ase": ""
   }
