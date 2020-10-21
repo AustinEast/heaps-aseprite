@@ -10,5 +10,5 @@ class Slice {
     this.data = data;
   }
 
-  private inline function get_name() return data.name;
+  inline function get_name() return data.name;
 }

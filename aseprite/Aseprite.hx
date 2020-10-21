@@ -89,30 +89,47 @@ class Aseprite extends Resource {
     return {index: index, tile: toTiles()[index], duration: frames[index].duration};
   }
 
-  public function getTag(name:String, direction:Int = -1):Array<AsepriteFrame> {
+  public function getTag(name:String, direction:Int = -1, ?slice_name:String):Array<AsepriteFrame> {
     var tag = tags.get(name);
     if (tag == null) {
       trace('WARNING: A tag named "$name" does not exist on this Aseprite.');
       return null;
     }
 
+    var slice:Slice = null;
+    if (slice_name != null) {
+      slice = slices.get(slice_name);
+      if (slice == null) trace('WARNING: A slice named "$slice_name" does not exist on this Aseprite.');
+    }
+
     var tiles = toTiles();
     var animation = [];
+
+    function add_animation(frame:Int) {
+      var sliceKey = slice == null ? null : getSliceKey(slice, frame);
+      animation.push({
+        index: frame,
+        tile: sliceKey == null ? tiles[frame] : tiles[frame].sub(sliceKey.xOrigin, sliceKey.yOrigin, sliceKey.width, sliceKey.height, -sliceKey.xPivot,
+          -sliceKey.yPivot),
+        duration: frames[frame].duration
+      });
+    }
+
     if (tag.chunk.fromFrame == tag.chunk.toFrame) animation.push({index: 0, tile: tiles[0], duration: frames[0].duration});
     else switch (direction < 0 ? tag.chunk.animDirection : direction) {
       case AnimationDirection.FORWARD:
-        for (i in tag.chunk.fromFrame...tag.chunk.toFrame + 1) animation.push({index: i, tile: tiles[i], duration: frames[i].duration});
+        for (i in tag.chunk.fromFrame...tag.chunk.toFrame + 1) add_animation(i);
       case AnimationDirection.REVERSE:
         var i = tag.chunk.toFrame;
-        while (i > tag.chunk.fromFrame) {
-          animation.push({index: i, tile: tiles[i], duration: frames[i].duration});
+        while (i >= tag.chunk.fromFrame) {
+          add_animation(i);
           i--;
         }
       case AnimationDirection.PING_PONG:
         var i = tag.chunk.fromFrame;
         var advance = true;
-        while (i > tag.chunk.fromFrame || advance) {
-          animation.push({index: i, tile: tiles[i], duration: frames[i].duration});
+        while (i >= tag.chunk.fromFrame || advance) {
+          add_animation(i);
           if (advance && i >= tag.chunk.toFrame) advance = false;
           i += advance ? 1 : -1;
         }
@@ -127,7 +144,7 @@ class Aseprite extends Resource {
       return null;
     }
 
-    var sliceKey = slice.data.sliceKeys[frame];
+    var sliceKey = getSliceKey(slice, frame);
     var x = frame % widthInTiles;
     var y = Math.floor(frame / widthInTiles);
 
@@ -150,10 +167,10 @@ class Aseprite extends Resource {
     }
 
     var tile = toTile();
-    var sliceKey = slice.data.sliceKeys[0];
 
     return [
       for (i in 0...frames.length) {
+        var sliceKey = getSliceKey(slice, i);
         var x = i % widthInTiles;
         var y = Math.floor(i / widthInTiles);
         {
@@ -166,7 +183,18 @@ class Aseprite extends Resource {
     ];
   }
 
-  private function loadData() {
+  public function watchCallback() {
+    for (frame in frames) frame.dispose();
+    frames.resize(0);
+    layers.resize(0);
+    tags.clear();
+    slices.clear();
+    tiles = null;
+    loadData();
+    loadTexture();
+  }
+
+  function loadData() {
     ase = Ase.fromBytes(entry.getBytes());
 
     for (chunk in ase.frames[0].chunks) {
@@ -219,7 +247,7 @@ class Aseprite extends Resource {
     }
   }
 
-  private function loadTexture() {
+  function loadTexture() {
     widthInTiles = 1;
     heightInTiles = 1;
 
@@ -256,18 +284,22 @@ class Aseprite extends Resource {
     pixels.dispose();
   }
 
-  public function watchCallback() {
-    for (frame in frames) frame.dispose();
-    frames.resize(0);
-    layers.resize(0);
-    tags.clear();
-    slices.clear();
-    tiles = null;
-    loadData();
-    loadTexture();
+  inline function getSliceKey(slice:Slice, frame:Int) {
+    var sliceKey = null;
+    if (slice.data.numSliceKeys > 0) {
+      var i = slice.data.numSliceKeys;
+      while (i > 0) {
+        i--;
+        if (frame >= slice.data.sliceKeys[i].frameNumber) {
+          sliceKey = slice.data.sliceKeys[i];
+          i = 0;
+        }
+      }
+    }
+    return sliceKey;
   }
 
-  private inline function next_power_of_2(v:Int) {
+  inline function next_power_of_2(v:Int) {
     v--;
     v |= v >> 1;
     v |= v >> 2;

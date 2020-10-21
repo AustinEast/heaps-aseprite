@@ -38,7 +38,7 @@ class Cel {
     if (pixels != null) pixels.dispose();
   }
 
-  private function grayscaleToRgba(bytes:Bytes) {
+  function grayscaleToRgba(bytes:Bytes) {
     var rgba = Bytes.alloc(4);
     var c = bytes.get(0);
     rgba.set(0, c);
@@ -48,7 +48,7 @@ class Cel {
     return rgba.getInt32(0);
   }
 
-  private inline function indexedToRgba(sprite:Aseprite, index:Int):Null<Int> {
+  inline function indexedToRgba(sprite:Aseprite, index:Int):Null<Int> {
     return index == sprite.ase.header.paletteEntry ? 0x00000000 : (sprite.palette.entries.exists(index) ? sprite.palette.entries[index] : 0x00000000);
   }
 }

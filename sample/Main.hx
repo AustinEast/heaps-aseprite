@@ -1,5 +1,6 @@
 package;
 
+import ase.AnimationDirection;
 import aseprite.AseAnim;
 import h2d.Bitmap;
 import h2d.Flow;
@@ -48,6 +49,12 @@ class Main extends App {
     new AseAnim(Res.tags.getTag('walk'), flow).loop = true;
     new AseAnim(Res.tags.getTag('hit_face'), flow).loop = true;
     new AseAnim(Res.tags.getTag('fall'), flow).loop = true;
+
+    // Tagged animation with direction override
+    new AseAnim(Res.tags.getTag('walk', AnimationDirection.REVERSE), flow).loop = true;
+
+    // Tagged animation with slices
+    new AseAnim(Res.tags.getTag('fall', -1, 'Head'), flow).loop = true;
 
     // Ping-Pong animation
     new AseAnim(Res.pong.getTag('pong'), flow).loop = true;
