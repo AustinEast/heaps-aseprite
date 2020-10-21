@@ -4,6 +4,8 @@
 # entry point
 -main Main
 
+ -D resourcesPath=sample/res
+
 # libraries
 -lib heaps
 -lib heaps-aseprite
