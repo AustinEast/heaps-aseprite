@@ -81,14 +81,14 @@ class Aseprite extends Resource {
     return {index: index, tile: toTiles()[index], duration: frames[index].duration};
   }
 
-  public function getTag(name:String):Array<AsepriteFrame> {
+  public function getTag(name:String, direction:Int = -1):Array<AsepriteFrame> {
     var tag = tags.get(name);
     if (tag == null) return null;
 
     var tiles = toTiles();
     var animation = [];
     if (tag.chunk.fromFrame == tag.chunk.toFrame) animation.push({index: 0, tile: tiles[0], duration: frames[0].duration});
-    else switch (tag.chunk.animDirection) {
+    else switch (direction < 0 ? tag.chunk.animDirection : direction) {
       case AnimationDirection.FORWARD:
         for (i in tag.chunk.fromFrame...tag.chunk.toFrame + 1) animation.push({index: i, tile: tiles[i], duration: frames[i].duration});
       case AnimationDirection.REVERSE:
