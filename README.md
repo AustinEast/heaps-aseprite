@@ -33,82 +33,38 @@ Then include the library in your project's `.hxml`:
 ## Example
 
 ```haxe
-package;
+// Get the whole sprite as a Tile
+var spr1 = new Bitmap(Res.single_frame_sprite.toTile(), s2d);
 
-import aseprite.AseAnim;
-import h2d.Bitmap;
-import h2d.Flow;
-import hxd.App;
-import hxd.Key;
-import hxd.Res;
+// Get an animation from the sprite's tag
+var spr2 = new AseAnim(Res.animated_sprite.getTag('walk'), s2d);
+spr2.loop = true;
 
-class Main extends App {
-  var flow:Flow;
-  var scrollSpeed = 250;
+// Override the direction of a tagged animation
+var spr3 = new AseAnim(Res.animated_sprite.getTag('walk', AnimationDirection.REVERSE), s2d);
+spr3.loop = true;
 
-  override function init() {
-    #if hl
-    Res.initLocal();
-    #else
-    Res.initEmbed();
-    #end
+// Get an animation based on tag and slice
+var spr4 = new AseAnim(Res.animated_sprite.getTag('walk', -1, 'Head'), s2d);
+spr4.loop = true;
 
-    engine.backgroundColor = 0x403750;
+// Get a single frame from a slice
+var slice = new Bitmap(Res.slices.getSlice('Slice 1').tile, s2d);
 
-    s2d.scaleMode = ScaleMode.LetterBox(engine.width, engine.height);
+// Get all frames from a slice
+var slice2 = new AseAnim(Res.slices.getSlices('Slice 1'), s2d);
+slice2.loop = true;
 
-    flow = new Flow(s2d);
-    flow.multiline = true;
-    flow.maxWidth = engine.width;
+// Get a 9-Slice ScaleGrid from a slice
+var nineSlice = Res.nine_slices.toScaleGrid('9-Slices', 0, s2d);
 
-    // RBG Color Mode
-    new Bitmap(Res._128x128_rgba.toTile(), flow);
-    // Grayscale Color Mode
-    new Bitmap(Res.grayscale.toTile(), flow);
-    // Indexed Color Mode
-    new Bitmap(Res.indexed_multi_layer.toTile(), flow);
-
-    // Tagged animations
-    new AseAnim(Res.tags.getTag('walk'), flow).loop = true;
-    new AseAnim(Res.tags.getTag('hit_face'), flow).loop = true;
-    new AseAnim(Res.tags.getTag('fall'), flow).loop = true;
-
-    // Ping-Pong animation
-    new AseAnim(Res.pong.getTag('pong'), flow).loop = true;
-
-    // Linked Cells
-    new AseAnim(Res.anim_linked_cels.getFrames(), flow).loop = true;
-
-    // Slice
-    new Bitmap(Res.slices.getSlice('Slice 1').tile, flow);
-    // 9 Slice
-    Res.slices.toScaleGrid('9-Slices', 0, flow);
-
-    // Animated Slices
-    new AseAnim(Res.slices2.getSlices('Slice 1'), flow).loop = true;
-    new AseAnim(Res.slices2.getSlices('Slice 2'), flow).loop = true;
-    new AseAnim(Res.slices2.getSlices('Slice 3'), flow).loop = true;
-    new AseAnim(Res.slices2.getSlices('Slice 4'), flow).loop = true;
-  }
-
-  override function update(dt:Float) {
-    if (Key.isPressed(Key.MOUSE_WHEEL_UP)) flow.scale(1.1);
-    if (Key.isPressed(Key.MOUSE_WHEEL_DOWN)) flow.scale(.9);
-    if (Key.isDown(Key.UP)) s2d.camera.move(0, -scrollSpeed * dt);
-    if (Key.isDown(Key.DOWN)) s2d.camera.move(0, scrollSpeed * dt);
-    if (Key.isDown(Key.RIGHT)) s2d.camera.move(scrollSpeed * dt, 0);
-    if (Key.isDown(Key.LEFT)) s2d.camera.move(-scrollSpeed * dt, 0);
-    if (Key.isPressed(Key.SPACE)) flow.debug = !flow.debug;
-
-    flow.scaleX = Math.max(1, flow.scaleX);
-    flow.scaleY = Math.max(1, flow.scaleY);
-    flow.reflow();
-  }
-
-  static function main() {
-    new Main();
-  }
-}
+// Live Resource Updatng
+var animation = new AseAnim(Res.animated_sprite.getTag('walk'), s2d);
+animation.loop = true;
+Res.animated_sprite.watch(() -> {
+  Res.animated_sprite.watchCallback();
+  animation.play(Res.animated_sprite.getTag('Idle'));
+});
 ```
 
 ## Roadmap
