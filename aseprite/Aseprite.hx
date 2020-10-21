@@ -62,7 +62,15 @@ class Aseprite extends Resource {
 
   public function toScaleGrid(name:String, frame:Int = 0, ?parent:Object) {
     var slice = slices.get(name);
-    if (slice == null || !slice.data.has9Slices) return null;
+    if (slice == null) {
+      trace('WARNING: A slice named "$name" does not exist on this Aseprite.');
+      return null;
+    }
+
+    if (!slice.data.has9Slices) {
+      trace('WARNING: Slice "$name" does not have 9-Slices enabled.');
+      return null;
+    }
 
     var sliceKey = slice.data.sliceKeys[frame];
 
@@ -83,7 +91,10 @@ class Aseprite extends Resource {
 
   public function getTag(name:String, direction:Int = -1):Array<AsepriteFrame> {
     var tag = tags.get(name);
-    if (tag == null) return null;
+    if (tag == null) {
+      trace('WARNING: A tag named "$name" does not exist on this Aseprite.');
+      return null;
+    }
 
     var tiles = toTiles();
     var animation = [];
@@ -111,7 +122,10 @@ class Aseprite extends Resource {
 
   public function getSlice(name:String, frame:Int = 0):AsepriteFrame {
     var slice = slices.get(name);
-    if (slice == null) return null;
+    if (slice == null) {
+      trace('WARNING: A slice named "$name" does not exist on this Aseprite.');
+      return null;
+    }
 
     var sliceKey = slice.data.sliceKeys[frame];
     var x = frame % widthInTiles;
@@ -130,7 +144,10 @@ class Aseprite extends Resource {
 
   public function getSlices(name:String):Array<AsepriteFrame> {
     var slice = slices.get(name);
-    if (slice == null) return null;
+    if (slice == null) {
+      trace('WARNING: A slice named "$name" does not exist on this Aseprite.');
+      return null;
+    }
 
     var tile = toTile();
     var sliceKey = slice.data.sliceKeys[0];
