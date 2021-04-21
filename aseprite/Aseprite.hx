@@ -115,7 +115,7 @@ class Aseprite extends Resource {
       });
     }
 
-    if (tag.chunk.fromFrame == tag.chunk.toFrame) animation.push({index: 0, tile: tiles[0], duration: frames[0].duration});
+    if (tag.chunk.fromFrame == tag.chunk.toFrame) add_animation(tag.chunk.fromFrame);
     else switch (direction < 0 ? tag.chunk.animDirection : direction) {
       case AnimationDirection.FORWARD:
         for (i in tag.chunk.fromFrame...tag.chunk.toFrame + 1) add_animation(i);
