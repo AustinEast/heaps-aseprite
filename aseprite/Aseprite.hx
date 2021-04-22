@@ -16,6 +16,9 @@ import hxd.fs.FileEntry;
 import hxd.res.Resource;
 
 class Aseprite extends Resource {
+  /** This option should be set before loading any texture **/
+  public static var resizeToNextPowerOfTwo = false;
+
   public var ase:Ase;
   public var frames(default, null):Array<Frame> = [];
   public var layers(default, null):Array<LayerChunk> = [];
@@ -259,8 +262,12 @@ class Aseprite extends Resource {
       }
     }
 
-    var textureWidth = next_power_of_2(ase.header.width * widthInTiles);
-    var textureHeight = next_power_of_2(ase.header.height * heightInTiles);
+    var textureWidth = ase.header.width * widthInTiles;
+    var textureHeight = ase.header.height * heightInTiles;
+    if( resizeToNextPowerOfTwo ) {
+      textureWidth = next_power_of_2(textureWidth);
+      textureHeight = next_power_of_2(textureHeight);
+    }
 
     var pixels = Pixels.alloc(textureWidth, textureHeight, RGBA);
 
