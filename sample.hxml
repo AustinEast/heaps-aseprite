@@ -14,7 +14,4 @@
 -debug
 -D windowTitle=heaps-aseprite
 -D windowSize=600x600
-
-# flags 
-# -dce full
--debug
+-D dump=pretty

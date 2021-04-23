@@ -1,12 +1,18 @@
 package aseprite;
 
+@:structInit
 class Tag {
-  public var chunk(default, null):ase.chunks.TagsChunk.Tag;
-  public var name(get, never):String;
+  public var name(default, null):String;
+  public var startFrame(default, null):Int;
+  public var endFrame(default, null):Int;
+  public var animationDirection(default, null):Int;
 
-  public function new(data:ase.chunks.TagsChunk.Tag) {
-    chunk = data;
+  public static function fromChunk(chunk:ase.chunks.TagsChunk.Tag):Tag {
+    return {
+      name: chunk.tagName,
+      startFrame: chunk.fromFrame,
+      endFrame: chunk.toFrame,
+      animationDirection: chunk.animDirection
+    }
   }
-
-  inline function get_name():String return chunk.tagName;
 }
