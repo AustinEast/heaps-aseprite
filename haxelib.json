@@ -1,6 +1,7 @@
 {
   "name": "heaps-aseprite",
   "license": "MIT",
+  "classPath": "src",
   "tags": [
     "heaps",
     "animation",
