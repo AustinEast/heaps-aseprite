@@ -9,11 +9,11 @@ import haxe.macro.Expr;
 /**
   This class extracts various identifiers from an Aseprite file on *compilation* time. This creates a typed structure that allows some type-safety: if an identifier changes in your Aseprite file (for example a tag), your compilation will show errors wherever this identifier was used. Example:
 
-    ```haxe
-    var tagsDictionary = aseprite.Dictionary.getTags("assets/myCharacter.aseprite");
-    trace(tagsDictionary); // { run:"run", idle:"idle", attackA:"attackA" }
-    someAnimManager.play( tagsDictionary.run ); // if "run" tag is renamed in Aseprite, this will show an error here
-    ```
+  ```haxe
+  var tagsDictionary = aseprite.Dictionary.getTags( hxd.Res.myFile );
+  trace(tagsDictionary);  // { run:"run", idle:"idle", attackA:"attackA" }
+  someAnimManager.play( tagsDictionary.run ); // if "run" tag is renamed in Aseprite, this will show an error here
+  ```
 **/
 
 class Dictionary {
@@ -50,9 +50,10 @@ class Dictionary {
     Build an anonymous object containing all "slices" names found in given Aseprite file.
     Example: `{  mySlice:"mySlice",  grass1:"grass1",  stoneBlock:"stoneBlock"  }`
   **/
-  macro public static function getSlices(asepritePath:String) {
+  macro public static function getSlices(asepriteRes:ExprOf<hxd.res.Resource>) {
     var pos = Context.currentPos();
-    var ase = readAseprite(asepritePath);
+    var path = resolveResToPath(asepriteRes);
+    var ase = readAseprite(path);
 
     // List all slices
     final magicId = 0x2022;
