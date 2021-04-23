@@ -12,8 +12,8 @@
     "austineast"
   ],
   "url": "https://github.com/AustinEast/heaps-aseprite",
-  "releasenote": "live reloading support",
-  "version": "0.0.4",
+  "releasenote": "Compile-time Aseprite file parsing",
+  "version": "0.1.0",
   "dependencies": {
     "ase": ""
   }
