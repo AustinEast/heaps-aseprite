@@ -2,6 +2,7 @@ package;
 
 import ase.AnimationDirection;
 import aseprite.AseAnim;
+import aseprite.Dictionary;
 import h2d.Bitmap;
 import h2d.Flow;
 import h2d.Text;
@@ -85,6 +86,14 @@ class Main extends App {
       // Replay the animation to get the updated frames
       animation.play(Res.test.toAseprite().getTag('Idle'));
     });
+
+    // Want type-safe Tags and Slices? Use the `Dictionary` class to get typed references from an Aseprite resource
+    // (Thanks @deepnight!)
+    var typeSafeTags = Dictionary.getTags(Res.tags);
+    new AseAnim(Res.tags.toAseprite().getTag(typeSafeTags.walk), flow).loop = true;
+
+    var typeSafeSlices = Dictionary.getSlices(Res.slices);
+    new Bitmap(Res.slices.toAseprite().getSlice(typeSafeSlices.Slice_1).tile, flow);
   }
 
   override function update(dt:Float) {

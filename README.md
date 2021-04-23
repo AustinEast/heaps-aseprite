@@ -7,6 +7,7 @@ Load and render sprites and animations in Aseprite format. Based on the [ase](ht
 * Supports all Color Modes, Animation Tags, Layers, and Slices (including 9-Slices!)
 * Includes the `AseAnim` Class to easily render Animations (based on the Heaps Engine's `Anim` Class)
 * Supports Live Resource Updating
+* Gets Type-safe references to an Aseprite file's Tags and Slices (thanks @deepnight!)
 
 ## Getting Started
 
@@ -72,6 +73,13 @@ Res.animated_sprite.watch(() -> {
   // Replay the animation to get the updated frames
   animation.play(Res.animated_sprite.toAseprite().getTag('walk'));
 });
+
+// Want type-safe Tags and Slices? Use the `Dictionary` class to get typed references from an Aseprite resource
+var typeSafeTags = Dictionary.getTags(Res.animated_sprite);
+new AseAnim(Res.animated_sprite.toAseprite().getTag(typeSafeTags.walk), flow);
+
+var typeSafeSlices = Dictionary.getSlices(Res.slices);
+new Bitmap(Res.slices.toAseprite().getSlice(typeSafeSlices.Slice_1).tile, flow);
 ```
 
 ## Roadmap
