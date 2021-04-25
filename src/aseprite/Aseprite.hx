@@ -329,7 +329,7 @@ class Aseprite {
     // Dispose of parsed pixels
     pixels.dispose();
     for (p in framePixels) p.dispose();
-    for (i in frameLayers) for (j in i) j.pixels.dispose();
+    for (i in frameLayers) for (j in i) if (j.pixels != null) j.pixels.dispose();
   }
 
   public function loadData(data:AsepriteData, ?tex:Texture) {
