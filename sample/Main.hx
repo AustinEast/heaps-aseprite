@@ -42,7 +42,7 @@ class Main extends App {
     fps.y += drawcalls.textHeight;
 
     // RBG Color Mode
-    new Bitmap(Res._128x128_rgba.toAseprite().toTile(), flow);
+    new Bitmap(Res.subdir_test._128x128_rgba.toAseprite().toTile(), flow);
     // Grayscale Color Mode
     new Bitmap(Res.grayscale.toAseprite().toTile(), flow);
     // Indexed Color Mode
