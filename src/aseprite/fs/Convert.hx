@@ -14,9 +14,7 @@ class AsepriteConvert extends Convert {
     var aseprite = Aseprite.fromBytes(srcBytes);
     sys.io.File.saveBytes(haxe.io.Path.withExtension(dstPath, "png"), Aseprite.fromBytes(srcBytes).getTexture().capturePixels().toPNG());
 
-    var serializer = new Serializer();
-    serializer.serialize(aseprite.toData());
-    save(Bytes.ofString(serializer.toString()));
+    save(Bytes.ofString(Serializer.run(aseprite.toData())));
     #else
     throw "Not implemented";
     #end
