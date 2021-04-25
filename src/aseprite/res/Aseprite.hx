@@ -11,8 +11,7 @@ class Aseprite extends Resource {
 
   public function toAseprite() {
     if (ase == null) {
-      var unserializer = new Unserializer(entry.getText());
-      ase = aseprite.Aseprite.fromData(unserializer.unserialize(), toImage().toTexture());
+      if (entry.isAvailable) ase = aseprite.Aseprite.fromData(Unserializer.run(entry.getText()), toImage().toTexture());
       if (ENABLE_AUTO_WATCH) watch(updateData);
     }
 
@@ -24,8 +23,7 @@ class Aseprite extends Resource {
   }
 
   public function updateData() {
-    var unserializer = new Unserializer(entry.getText());
-    ase.loadData(unserializer.unserialize());
+    ase.loadData(Unserializer.run(entry.getText()));
   }
 
   static var _ = hxd.fs.Convert.register(new aseprite.fs.Convert.AsepriteConvert());
