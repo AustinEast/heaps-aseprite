@@ -12,8 +12,8 @@
     "austineast"
   ],
   "url": "https://github.com/AustinEast/heaps-aseprite",
-  "releasenote": "Compile-time Aseprite file parsing",
-  "version": "0.1.0",
+  "releasenote": "Temporarily disable Convert functionality",
+  "version": "0.1.1",
   "dependencies": {
     "ase": ""
   }
