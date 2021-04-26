@@ -11,10 +11,13 @@ class AsepriteConvert extends Convert {
 
   override function convert() {
     #if (sys || nodejs)
-    var aseprite = Aseprite.fromBytes(srcBytes);
-    sys.io.File.saveBytes(haxe.io.Path.withExtension(dstPath, "png"), Aseprite.fromBytes(srcBytes).getTexture().capturePixels().toPNG());
-
-    save(Bytes.ofString(Serializer.run(aseprite.toData())));
+    var parsedAse = Utils.parseAse(ase.Ase.fromBytes(srcBytes));
+    // Save pixels as `.png`
+    hxd.File.saveBytes(haxe.io.Path.withExtension(dstPath, "png"), parsedAse.pixels.toPNG());
+    // Save data as `.asedata`
+    save(Bytes.ofString(Serializer.run(parsedAse.data)));
+    // Clean up
+    parsedAse.pixels.dispose();
     #else
     throw "Not implemented";
     #end

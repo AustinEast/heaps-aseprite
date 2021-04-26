@@ -15,3 +15,5 @@
 -D windowTitle=heaps-aseprite
 -D windowSize=600x600
 -D dump=pretty
+
+# --dce no

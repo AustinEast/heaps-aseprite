@@ -6,8 +6,6 @@ import aseprite.Dictionary;
 import h2d.Bitmap;
 import h2d.Flow;
 import h2d.Text;
-import haxe.Serializer;
-import haxe.Unserializer;
 import hxd.App;
 import hxd.Key;
 import hxd.Res;
@@ -20,12 +18,6 @@ class Main extends App {
   var fps:Text;
 
   override function init() {
-    #if hl
-    Res.initLocal();
-    #else
-    Res.initEmbed();
-    #end
-
     engine.backgroundColor = 0x403750;
 
     s2d.scaleMode = ScaleMode.LetterBox(engine.width, engine.height);
@@ -47,6 +39,9 @@ class Main extends App {
     new Bitmap(Res.grayscale.toAseprite().toTile(), flow);
     // Indexed Color Mode
     new Bitmap(Res.indexed_multi_layer.toAseprite().toTile(), flow);
+
+    // toImage() support (only enabled when aseprite.fs.Convert.AsepriteConvert is enabled)
+    // new Bitmap(Res.indexed_multi_layer.toImage().toTile(), flow);
 
     // Tagged animations
     new AseAnim(Res.tags.toAseprite().getTag('walk'), flow).loop = true;
@@ -117,6 +112,14 @@ class Main extends App {
   }
 
   static function main() {
+    // Reg.init();
+
+    #if hl
+    Res.initLocal();
+    #else
+    Res.initEmbed();
+    #end
+
     new Main();
   }
 }
