@@ -2,9 +2,7 @@ package aseprite;
 
 import ase.Ase;
 import ase.chunks.CelChunk;
-import ase.chunks.CelType;
-import ase.chunks.ChunkType;
-import ase.chunks.LayerFlags;
+import ase.chunks.LayerChunk.LayerFlags;
 import ase.chunks.TagsChunk;
 import haxe.ds.Vector;
 import haxe.io.Bytes;
@@ -31,11 +29,11 @@ class Utils {
     // Parse all the chunk data
     for (chunk in ase.frames[0].chunks) {
       switch (chunk.header.type) {
-        case ChunkType.LAYER:
+        case LAYER:
           data.layers.push(Layer.fromChunk(cast chunk));
-        case ChunkType.PALETTE:
+        case PALETTE:
           data.palette = Palette.fromChunk(cast chunk);
-        case ChunkType.TAGS:
+        case TAGS:
           var frameTags:TagsChunk = cast chunk;
 
           for (frameTagData in frameTags.tags) {
@@ -55,9 +53,10 @@ class Utils {
               data.tags[frameTagData.tagName] = animationTag;
             }
           }
-        case ChunkType.SLICE:
+        case SLICE:
           var newSlice = Slice.fromChunk(cast chunk);
           data.slices[newSlice.name] = newSlice;
+        case _:
       }
     }
     // Parse all the frame data
@@ -124,9 +123,9 @@ class Utils {
 
     for (chunk in data.chunks) {
       // Parse all the cel chunks - either get new pixels or create links to prior cel chunks (for linked cel animations)
-      if (chunk.header.type == ChunkType.CEL) {
+      if (chunk.header.type == CEL) {
         var celChunk:CelChunk = cast chunk;
-        if (celChunk.celType == CelType.LINKED) {
+        if (celChunk.celType == Linked) {
           currentFrameLayers[celChunk.layerIndex].celChunk = frameLayers[celChunk.linkedFrame][celChunk.layerIndex].celChunk;
           currentFrameLayers[celChunk.layerIndex].pixels = frameLayers[celChunk.linkedFrame][celChunk.layerIndex].pixels;
         }
@@ -138,7 +137,7 @@ class Utils {
 
       // Copy all cel chunk pixels to the frame
       for (layer in currentFrameLayers) {
-        if (layer.celChunk != null && (layer.layer.flags & LayerFlags.VISIBLE != 0)) {
+        if (layer.celChunk != null && (layer.layer.flags & LayerFlags.Visible != 0)) {
           // Get the rect of pixels to grab from the cel chunk
           // If a cel chunk starts off-canvas (ie has an x/y below zero), ignore those pixels
           var minX = layer.celChunk.xPosition < 0 ? -layer.celChunk.xPosition : 0;
@@ -171,16 +170,17 @@ class Utils {
       var bytes:BytesBuffer = new BytesBuffer();
 
       switch (ase.header.colorDepth) {
-        case 16:
+        case BPP16:
           for (y in 0...celChunk.height) for (x in 0...celChunk.width) {
             var pixel = grayscaleToRgba(bytesInput.read(2));
             bytes.writeInt32(pixel);
           }
-        case 8:
+        case INDEXED:
           for (y in 0...celChunk.height) for (x in 0...celChunk.width) {
             var pixel = indexedToRgba(ase, palette, bytesInput.readByte());
             bytes.writeInt32(pixel);
           }
+        case _:
       }
       return new Pixels(celChunk.width, celChunk.height, bytes.getBytes(), RGBA);
     }
