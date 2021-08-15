@@ -45,9 +45,9 @@ class Aseprite {
     return aseprite;
   }
 
-  public static function fromData(data:AsepriteData, texture:Texture) {
+  public static function fromData(data:AsepriteData, pixels:Pixels) {
     var aseprite = new Aseprite();
-    aseprite.loadData(data, texture);
+    aseprite.loadData(data, pixels);
     return aseprite;
   }
 
@@ -218,12 +218,12 @@ class Aseprite {
     var ase = Ase.fromBytes(bytes);
     var parsedAse = Utils.parseAse(ase);
 
-    loadData(parsedAse.data, Texture.fromPixels(parsedAse.pixels));
+    loadData(parsedAse.data, parsedAse.pixels);
 
     parsedAse.pixels.dispose();
   }
 
-  public function loadData(data:AsepriteData, ?tex:Texture) {
+  public function loadData(data:AsepriteData, ?pixels:Pixels) {
     tiles = null;
 
     frames = data.frames;
@@ -237,16 +237,14 @@ class Aseprite {
     widthInTiles = data.widthInTiles;
     heightInTiles = data.heightInTiles;
 
-    if (tex == null) return;
+    if (pixels == null) return;
 
     // Update the Texture
     if (texture == null) {
-      texture = tex;
+      texture = Texture.fromPixels(pixels);
     }
     else {
-      texture.swapTexture(tex);
-      texture.alloc();
-      tex.dispose();
+      texture.uploadPixels(pixels);
     }
   }
 

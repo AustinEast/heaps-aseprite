@@ -13,7 +13,7 @@ class Aseprite extends Resource {
     if (ase == null) {
       if (entry.isAvailable) {
         ase = usingConvert() ? aseprite.Aseprite.fromData(Unserializer.run(entry.getText()),
-          toImage().toTexture()) : aseprite.Aseprite.fromBytes(entry.getBytes());
+          toImage().toTexture().capturePixels()) : aseprite.Aseprite.fromBytes(entry.getBytes());
       }
       if (ENABLE_AUTO_WATCH) watch(updateData);
     }
@@ -24,7 +24,7 @@ class Aseprite extends Resource {
   public function toImage() {
     if (usingConvert()) return hxd.res.Loader.currentInstance.loadCache(haxe.io.Path.withExtension(".tmp/" + entry.path, "png"), Image);
 
-    throw '`toImage() is only supported when using aseprite.fs.Convert.AsepriteConvert';
+    throw '`toImage()` is only supported when using aseprite.fs.Convert.AsepriteConvert';
   }
 
   public function updateData() {
