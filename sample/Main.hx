@@ -112,8 +112,9 @@ class Main extends App {
   }
 
   static function main() {
-    // Reg.init();
-
+    aseprite.fs.Convert.register();
+    // aseprite.Macros.convert();
+    trace(@:privateAccess hxd.fs.Convert.converts);
     #if hl
     Res.initLocal();
     #else

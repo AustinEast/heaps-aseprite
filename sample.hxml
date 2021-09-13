@@ -16,4 +16,6 @@
 -D windowSize=600x600
 -D dump=pretty
 
+--macro aseprite.Macros.convert()
+
 # --dce no

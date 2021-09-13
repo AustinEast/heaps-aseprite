@@ -1,6 +1,7 @@
 {
   "fs.convert": 
   {
-    
+    "ase" : "asedata",
+    "aseprite" : "asedata"
   }
 }
