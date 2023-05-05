@@ -2,7 +2,7 @@ package aseprite;
 
 import ase.Ase;
 import ase.chunks.CelChunk;
-import ase.chunks.LayerChunk;
+import ase.chunks.LayerChunk.LayerFlags;
 import ase.chunks.TagsChunk;
 import ase.chunks.TilesetChunk;
 import ase.types.ChunkType;
