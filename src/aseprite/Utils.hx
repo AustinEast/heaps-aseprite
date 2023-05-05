@@ -4,9 +4,12 @@ import ase.Ase;
 import ase.chunks.CelChunk;
 import ase.chunks.LayerChunk.LayerFlags;
 import ase.chunks.TagsChunk;
+import ase.chunks.TilesetChunk;
+import ase.types.ChunkType;
 import haxe.ds.Vector;
 import haxe.io.Bytes;
 import haxe.io.BytesInput;
+import haxe.io.UInt32Array;
 import hxd.BytesBuffer;
 import hxd.Math;
 import hxd.Pixels;
@@ -125,13 +128,17 @@ class Utils {
       // Parse all the cel chunks - either get new pixels or create links to prior cel chunks (for linked cel animations)
       if (chunk.header.type == CEL) {
         var celChunk:CelChunk = cast chunk;
-        if (celChunk.celType == Linked) {
-          currentFrameLayers[celChunk.layerIndex].celChunk = frameLayers[celChunk.linkedFrame][celChunk.layerIndex].celChunk;
-          currentFrameLayers[celChunk.layerIndex].pixels = frameLayers[celChunk.linkedFrame][celChunk.layerIndex].pixels;
-        }
-        else {
-          currentFrameLayers[celChunk.layerIndex].celChunk = celChunk;
-          currentFrameLayers[celChunk.layerIndex].pixels = getCelPixels(ase, palette, celChunk);
+        switch (celChunk.celType) {
+          case Linked:
+            currentFrameLayers[celChunk.layerIndex].celChunk = frameLayers[celChunk.linkedFrame][celChunk.layerIndex].celChunk;
+            currentFrameLayers[celChunk.layerIndex].pixels = frameLayers[celChunk.linkedFrame][celChunk.layerIndex].pixels;
+          case CompressedImage | Raw:
+            currentFrameLayers[celChunk.layerIndex].celChunk = celChunk;
+            currentFrameLayers[celChunk.layerIndex].pixels = getCelPixels(ase, palette, celChunk);
+          case CompressedTilemap:
+            currentFrameLayers[celChunk.layerIndex].celChunk = celChunk;
+            currentFrameLayers[celChunk.layerIndex].pixels = getCelPixelsFromTilemap(ase, palette, celChunk);
+          case _: throw "Unknown CelType " + Std.string(celChunk.celType);
         }
       }
 
@@ -144,6 +151,13 @@ class Utils {
           var minY = layer.celChunk.yPosition < 0 ? -layer.celChunk.yPosition : 0;
           var maxWidth = layer.celChunk.width;
           var maxHeight = layer.celChunk.height;
+
+          if (layer.celChunk.celType == CompressedTilemap) {
+            // celChunk width and height is in tiles - convert to pixel width and height
+            var tilesetChunk:TilesetChunk = getTilemapFromCel(layer.celChunk, ase);
+            maxWidth *= tilesetChunk.width;
+            maxHeight *= tilesetChunk.height;
+          }
 
           // Iterate through the cel chunk's pixels and copy them to the frame's pixels
           for (y in minY...maxHeight) for (x in minX...maxWidth) {
@@ -184,6 +198,56 @@ class Utils {
       }
       return new Pixels(celChunk.width, celChunk.height, bytes.getBytes(), RGBA);
     }
+  }
+
+  static function getCelPixelsFromTilemap(ase:Ase, palette:Palette, celChunk:CelChunk) {
+    var tilesetChunk:TilesetChunk = getTilemapFromCel(celChunk, ase);
+    var bytesInput = new BytesInput(tilesetChunk.uncompressedTilesetImage);
+    var allTilePixels:Array<Pixels> = [];
+
+    // Read from uncompressedTilesetImage into an Array<Pixels> where each entry is a tile
+    for (i in 0...tilesetChunk.numTiles) {
+      var tile:BytesBuffer = new BytesBuffer();
+      switch (ase.header.colorDepth) {
+        case BPP32:
+          for (y in 0...tilesetChunk.height) for (x in 0...tilesetChunk.width) {
+            tile.writeInt32(bytesInput.readInt32());
+          };
+        case BPP16:
+          for (y in 0...tilesetChunk.height) for (x in 0...tilesetChunk.width) {
+            tile.writeInt32(grayscaleToRgba(bytesInput.read(2)));
+          };
+        case INDEXED:
+          for (y in 0...tilesetChunk.height) for (x in 0...tilesetChunk.width) {
+            tile.writeInt32(indexedToRgba(ase, palette, bytesInput.readByte()));
+          };
+      }
+
+      allTilePixels.push(new Pixels(tilesetChunk.width, tilesetChunk.height, tile.getBytes(), RGBA));
+    }
+
+    // alloc for total chunk pixels
+    var resultBytes:Bytes = Bytes.alloc(Std.int((celChunk.width * tilesetChunk.width * celChunk.height * tilesetChunk.height) * 4));
+    resultBytes.fill(0, resultBytes.length, 0);
+    var resultPixels:Pixels = new Pixels(celChunk.width * tilesetChunk.width, celChunk.height * tilesetChunk.height, resultBytes, RGBA);
+
+    // Blit the tiles onto the result pixels
+    var tileIndices = UInt32Array.fromBytes(celChunk.tilemapData);
+
+    for (y in 0...celChunk.height) for (x in 0...celChunk.width) {
+      var idx = tileIndices[y * celChunk.width + x];
+      var pixels:Pixels = allTilePixels[idx];
+
+      resultPixels.blit(x * tilesetChunk.width, y * tilesetChunk.height, pixels, 0, 0, tilesetChunk.width, tilesetChunk.height);
+    }
+
+    return resultPixels;
+  }
+
+  static function getTilemapFromCel(celChunk:CelChunk, ase:Ase) {
+    var tilesetIndex:Int = ase.layers[celChunk.layerIndex].chunk.tilesetIndex;
+    var tilesetChunk:TilesetChunk = cast ase.frames[0].chunkTypes[TILESET][tilesetIndex];
+    return tilesetChunk;
   }
 
   static inline function grayscaleToRgba(bytes:Bytes) {
