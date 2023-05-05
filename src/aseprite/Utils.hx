@@ -136,9 +136,8 @@ class Utils {
             currentFrameLayers[celChunk.layerIndex].celChunk = celChunk;
             currentFrameLayers[celChunk.layerIndex].pixels = getCelPixels(ase, palette, celChunk);
           case CompressedTilemap:
-            var tilesetChunk:TilesetChunk = getTilemapFromCel(celChunk, ase, frame);
             currentFrameLayers[celChunk.layerIndex].celChunk = celChunk;
-            currentFrameLayers[celChunk.layerIndex].pixels = getCelPixelsFromTilemap(ase, palette, celChunk, tilesetChunk);
+            currentFrameLayers[celChunk.layerIndex].pixels = getCelPixelsFromTilemap(ase, palette, celChunk);
           case _: throw "Unknown CelType " + Std.string(celChunk.celType);
         }
       }
@@ -155,7 +154,7 @@ class Utils {
 
           if (layer.celChunk.celType == CompressedTilemap) {
             // celChunk width and height is in tiles - convert to pixel width and height
-            var tilesetChunk:TilesetChunk = getTilemapFromCel(layer.celChunk, ase, frame);
+            var tilesetChunk:TilesetChunk = getTilemapFromCel(layer.celChunk, ase);
             maxWidth *= tilesetChunk.width;
             maxHeight *= tilesetChunk.height;
           }
@@ -201,7 +200,8 @@ class Utils {
     }
   }
 
-  static function getCelPixelsFromTilemap(ase:Ase, palette:Palette, celChunk:CelChunk, tilesetChunk:TilesetChunk) {
+  static function getCelPixelsFromTilemap(ase:Ase, palette:Palette, celChunk:CelChunk) {
+    var tilesetChunk:TilesetChunk = getTilemapFromCel(celChunk, ase);
     var bytesInput = new BytesInput(tilesetChunk.uncompressedTilesetImage);
     var allTilePixels:Array<Pixels> = [];
 
@@ -244,7 +244,7 @@ class Utils {
     return resultPixels;
   }
 
-  static function getTilemapFromCel(celChunk:CelChunk, ase:Ase, frame:Frame) {
+  static function getTilemapFromCel(celChunk:CelChunk, ase:Ase) {
     var tilesetIndex:Int = ase.layers[celChunk.layerIndex].chunk.tilesetIndex;
     var tilesetChunk:TilesetChunk = cast ase.frames[0].chunkTypes[TILESET][tilesetIndex];
     return tilesetChunk;
