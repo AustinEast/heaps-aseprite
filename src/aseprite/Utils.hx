@@ -246,7 +246,7 @@ class Utils {
 
   static function getTilemapFromCel(celChunk:CelChunk, ase:Ase, frame:Frame) {
     var tilesetIndex:Int = ase.layers[celChunk.layerIndex].chunk.tilesetIndex;
-    var tilesetChunk:TilesetChunk = cast ase.frames[frame.index].chunkTypes[TILESET][tilesetIndex];
+    var tilesetChunk:TilesetChunk = cast ase.frames[0].chunkTypes[TILESET][tilesetIndex];
     return tilesetChunk;
   }
 
