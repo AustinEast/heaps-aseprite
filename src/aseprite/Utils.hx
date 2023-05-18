@@ -236,6 +236,7 @@ class Utils {
 
     for (y in 0...celChunk.height) for (x in 0...celChunk.width) {
       var idx = tileIndices[y * celChunk.width + x];
+      if (idx >= allTilePixels.length) continue;
       var pixels:Pixels = allTilePixels[idx];
 
       resultPixels.blit(x * tilesetChunk.width, y * tilesetChunk.height, pixels, 0, 0, tilesetChunk.width, tilesetChunk.height);
