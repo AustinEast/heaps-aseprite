@@ -15,7 +15,7 @@ class Aseprite extends Resource {
         ase = usingConvert() ? aseprite.Aseprite.fromData(Unserializer.run(entry.getText()),
           toImage().toTexture().capturePixels()) : aseprite.Aseprite.fromBytes(entry.getBytes());
       }
-      if (ENABLE_AUTO_WATCH) watch(updateData);
+      if (ENABLE_AUTO_WATCH) watch(updateData.bind());
     }
 
     return ase;
@@ -27,9 +27,15 @@ class Aseprite extends Resource {
     throw '`toImage()` is only supported when using aseprite.fs.Convert.AsepriteConvert';
   }
 
-  public function updateData() {
-    if (usingConvert()) ase.loadData(Unserializer.run(entry.getText()));
-    else ase.loadBytes(entry.getBytes());
+  public function updateData(tries = 0) {
+    try {
+      if (usingConvert()) ase.loadData(Unserializer.run(entry.getText()));
+      else ase.loadBytes(entry.getBytes());
+    } catch (err:haxe.io.Eof) {
+      tries++;
+      if (tries < 3) haxe.Timer.delay(updateData.bind(tries), 1000);
+      else trace("Could not reload Aseprite resource: " + entry.name);
+    }
   }
 
   private function usingConvert():Bool {
