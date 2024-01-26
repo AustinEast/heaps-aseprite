@@ -200,10 +200,10 @@ class Utils {
     }
   }
 
-  static function getCelPixelsFromTilemap(ase:Ase, palette:Palette, celChunk:CelChunk) {
-    var tilesetChunk:TilesetChunk = getTilemapFromCel(celChunk, ase);
-    var bytesInput = new BytesInput(tilesetChunk.uncompressedTilesetImage);
-    var allTilePixels:Array<Pixels> = [];
+  static function getCelPixelsFromTilemap(ase:Ase, palette:Palette, celChunk:CelChunk):Pixels {
+    var tilesetChunk = getTilemapFromCel(celChunk, ase);
+    var tilesetBytes = new BytesInput(tilesetChunk.uncompressedTilesetImage);
+    var tileset:Array<Pixels> = [];
 
     // Read from uncompressedTilesetImage into an Array<Pixels> where each entry is a tile
     for (i in 0...tilesetChunk.numTiles) {
@@ -211,37 +211,38 @@ class Utils {
       switch (ase.header.colorDepth) {
         case BPP32:
           for (y in 0...tilesetChunk.height) for (x in 0...tilesetChunk.width) {
-            tile.writeInt32(bytesInput.readInt32());
+            tile.writeInt32(tilesetBytes.readInt32());
           };
         case BPP16:
           for (y in 0...tilesetChunk.height) for (x in 0...tilesetChunk.width) {
-            tile.writeInt32(grayscaleToRgba(bytesInput.read(2)));
+            tile.writeInt32(grayscaleToRgba(tilesetBytes.read(2)));
           };
         case INDEXED:
           for (y in 0...tilesetChunk.height) for (x in 0...tilesetChunk.width) {
-            tile.writeInt32(indexedToRgba(ase, palette, bytesInput.readByte()));
+            tile.writeInt32(indexedToRgba(ase, palette, tilesetBytes.readByte()));
           };
       }
 
-      allTilePixels.push(new Pixels(tilesetChunk.width, tilesetChunk.height, tile.getBytes(), RGBA));
+      tileset.push(new Pixels(tilesetChunk.width, tilesetChunk.height, tile.getBytes(), RGBA));
     }
 
     // alloc for total chunk pixels
-    var resultBytes:Bytes = Bytes.alloc(Std.int((celChunk.width * tilesetChunk.width * celChunk.height * tilesetChunk.height) * 4));
+    var resultBytes = Bytes.alloc(Std.int((celChunk.width * tilesetChunk.width * celChunk.height * tilesetChunk.height) * 4));
     resultBytes.fill(0, resultBytes.length, 0);
-    var resultPixels:Pixels = new Pixels(celChunk.width * tilesetChunk.width, celChunk.height * tilesetChunk.height, resultBytes, RGBA);
+    var result = new Pixels(celChunk.width * tilesetChunk.width, celChunk.height * tilesetChunk.height, resultBytes, RGBA);
 
     // Blit the tiles onto the result pixels
-    var tileIndices = UInt32Array.fromBytes(celChunk.tilemapData);
+    var tilemap = UInt32Array.fromBytes(celChunk.tilemapData);
 
     for (y in 0...celChunk.height) for (x in 0...celChunk.width) {
-      var idx = tileIndices[y * celChunk.width + x];
-      var pixels:Pixels = allTilePixels[idx];
+      var idx = tilemap[y * celChunk.width + x];
+      if (idx >= tilesetChunk.numTiles) continue;
+      var tile = tileset[idx];
 
-      resultPixels.blit(x * tilesetChunk.width, y * tilesetChunk.height, pixels, 0, 0, tilesetChunk.width, tilesetChunk.height);
+      result.blit(x * tilesetChunk.width, y * tilesetChunk.height, tile, 0, 0, tilesetChunk.width, tilesetChunk.height);
     }
 
-    return resultPixels;
+    return result;
   }
 
   static function getTilemapFromCel(celChunk:CelChunk, ase:Ase) {
